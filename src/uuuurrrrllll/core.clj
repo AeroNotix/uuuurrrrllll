@@ -18,5 +18,5 @@
   (GET "/:url/" request
        (fn [request]
          (if-let [url (get-in request [:params :url])]
-           {:status 301 :headers {"location" (@url-map :url)}}
+           {:status 301 :headers {"location" (@url-map url)}}
            {:status 404}))))
