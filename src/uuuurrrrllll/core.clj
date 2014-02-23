@@ -66,6 +66,6 @@
 
 (defn -main [& args]
   (wc/connect!)
-  (if-not (contains? bucket (wb/list))
+  (if-not (contains? (wb/list) bucket)
     (wb/create bucket))
   (jetty/run-jetty wrapp {:port 8080}))
