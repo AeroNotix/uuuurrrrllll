@@ -26,14 +26,16 @@
     {:status 201 :body {:short (add-url! url)}}
     {:status 400}))
 
+(defn handle-get [request]
+  (if-let [url (get-in request [:params :url])]
+    {:status 301 :headers {"location" (@url-map url)}}
+    {:status 404}))
+
 (defroutes app
   (POST "/" request
         handle-post)
   (GET "/:url/" request
-       (fn [request]
-         (if-let [url (get-in request [:params :url])]
-           {:status 301 :headers {"location" (@url-map url)}}
-           {:status 404}))))
+       handle-get))
 
 (def wrapp
   (-> app
