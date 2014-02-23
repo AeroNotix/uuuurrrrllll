@@ -1,21 +1,15 @@
 (ns uuuurrrrllll.core
-  (:require [compojure.core :refer [defroutes routes GET POST]]
-            [clojure.core.cache :as cache]
+  (:require [clojurewerkz.welle.buckets :as wb]
+            [clojurewerkz.welle.core :as wc]
+            [clojurewerkz.welle.kv :as kv]
+            [compojure.core :refer [defroutes routes GET POST]]
+            [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body
-                                          wrap-json-response]]
-            [ring.adapter.jetty :as jetty])
+                                          wrap-json-response]])
   (:use [hiccup.core]))
 
 
-;; One day in ms.
-(def one-day 86400000)
-(def url-map (atom (cache/ttl-cache-factory {} :ttl one-day)))
-
-(defn expire-entries! [c]
-  (cache/ttl-cache-factory
-   (into {} (filter #((complement nil?) (second %))
-                    (map #(vector % (get c %)) (keys c))))
-   :ttl (.ttl-ms c)))
+(def bucket "links")
 
 (def char-seq (doall
                (for [c (range 65 91)]
@@ -26,10 +20,16 @@
    (take n (repeatedly #(rand-nth char-seq)))))
 
 (defn add-url! [url]
-  (swap! url-map expire-entries!)
   (let [short-url (gen-short-url 10)]
-    (swap! url-map assoc short-url url)
+    (kv/store bucket short-url url)
     short-url))
+
+(defn get-url [short]
+  (if-let [value (-> (kv/fetch-one bucket short)
+                     :result
+                     :value)]
+    (String. value)
+    nil))
 
 (defn handle-post [request]
   (if-let [url (get-in request [:body "url"])]
@@ -39,7 +39,7 @@
 (defn handle-get [request]
   (if-let [url (-> request
                    (get-in [:params :url])
-                   ((fn [u] (cache/lookup @url-map u))))]
+                   (get-url))]
     {:status 301 :headers {"location" url}}
     {:status 404}))
 
@@ -47,8 +47,9 @@
   {:status 200
    :body (html [:body
                 [:ul
-                 (for [[_ v] (seq @url-map)]
-                   [:li [:a {:href v} v]])]])})
+                 (for [k (seq (wb/keys-in bucket))]
+                   (let [v (get-url k)]
+                   [:li [:a {:href v} v]]))]])})
 
 (defroutes app
   (POST "/" request
@@ -64,4 +65,7 @@
       wrap-json-response))
 
 (defn -main [& args]
+  (wc/connect!)
+  (if-not (contains? bucket (wb/list))
+    (wb/create bucket))
   (jetty/run-jetty wrapp {:port 8080}))
