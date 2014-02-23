@@ -8,7 +8,7 @@
 
 
 ;; One day in ms.
-(def one-day (* (* (* 60 60) 24) 1000))
+(def one-day 86400000)
 (def url-map (atom (cache/ttl-cache-factory {} :ttl one-day)))
 
 (defn expire-entries! [c]
