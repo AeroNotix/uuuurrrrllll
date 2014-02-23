@@ -1,11 +1,20 @@
 (ns uuuurrrrllll.core
   (:require [compojure.core :refer [defroutes routes GET POST]]
+            [clojure.core.cache :as cache]
             [ring.middleware.json :refer [wrap-json-body
                                           wrap-json-response]]
             [ring.adapter.jetty :as jetty]))
 
 
-(def url-map (atom {}))
+;; One day in ms.
+(def one-day (* (* (* 60 60) 24) 1000))
+(def url-map (atom (cache/ttl-cache-factory {} :ttl one-day)))
+
+(defn expire-entries! [c]
+  (cache/ttl-cache-factory
+   (into {} (filter #((complement nil?) (second %))
+                    (map #(vector % (get c %)) (keys c))))
+   :ttl (.ttl-ms c)))
 
 (def char-seq (doall
                (for [c (range 65 91)]
@@ -16,6 +25,7 @@
    (take n (repeatedly #(rand-nth char-seq)))))
 
 (defn add-url! [url]
+  (swap! url-map expire-entries!)
   (let [short-url (gen-short-url 10)]
     (swap! url-map assoc short-url url)
     short-url))
