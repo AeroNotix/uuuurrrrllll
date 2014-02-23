@@ -47,8 +47,8 @@
   {:status 200
    :body (html [:body
                 [:ul
-                 (for [[k v] (seq @url-map)]
-                   [:li [:a {:href v} k]])]])})
+                 (for [[_ v] (seq @url-map)]
+                   [:li [:a {:href v} v]])]])})
 
 (defroutes app
   (POST "/" request
