@@ -37,8 +37,10 @@
     {:status 400}))
 
 (defn handle-get [request]
-  (if-let [url (get-in request [:params :url])]
-    {:status 301 :headers {"location" (@url-map url)}}
+  (if-let [url (-> request
+                   (get-in [:params :url])
+                   ((fn [u] (cache/lookup @url-map u))))]
+    {:status 301 :headers {"location" url}}
     {:status 404}))
 
 (defn list-all [request]
