@@ -2,8 +2,7 @@
   (:require [compojure.core :refer [defroutes routes GET POST]]
             [ring.middleware.json :refer [wrap-json-body
                                           wrap-json-response]]
-            [ring.adapter.jetty :as jetty]
-            [clojure.pprint :as pp]))
+            [ring.adapter.jetty :as jetty]))
 
 
 (def url-map (atom {}))
