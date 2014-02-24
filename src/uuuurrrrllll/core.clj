@@ -42,6 +42,7 @@
     [k (map :url v)]))
 
 (defn get-all-entries []
+  (wc/connect!)
   (let [keys (wb/keys-in bucket)]
     (->> "all"
          (kv/index-query bucket :all)
@@ -50,6 +51,7 @@
          (merge-urls))))
 
 (defn handle-post [request]
+  (wc/connect!)
   (let [body    (:body request)
         url     (body "url")
         channel (body "channel")
@@ -62,6 +64,7 @@
       {:status 400})))
 
 (defn handle-get [request]
+  (wc/connect!)
   (if-let [url (-> request
                    (get-in [:params :url])
                    (get-entry)
@@ -70,6 +73,7 @@
     {:status 404}))
 
 (defn list-all [request]
+  (wc/connect!)
   {:status 200
    :body (html [:body
                 [:ul
