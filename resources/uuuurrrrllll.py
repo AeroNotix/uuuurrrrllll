@@ -34,7 +34,11 @@ def shorten_url(data, signal, signal_data):
     channel_ptr = weechat.buffer_search("irc", "%s.%s" % (n, d['channel']))
     shortened = []
     for url in extract_urls(d['message']):
-        r = requests.post(URL_SERVER, data = json.dumps({'url': url}),
+        r = requests.post(URL_SERVER, data = json.dumps({
+            'url':     url,
+            'nick':    d['nick'],
+            'channel': d['channel']
+        }),
                           headers = {'content-type': 'application/json'})
         shortened.append(r.json()['short'])
     if shortened:
