@@ -5,7 +5,8 @@
             [compojure.core :refer [defroutes routes GET POST]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body
-                                          wrap-json-response]])
+                                          wrap-json-response]]
+            [hiccup.util :refer [escape-html]])
   (:use [hiccup.core]))
 
 
@@ -48,7 +49,7 @@
    :body (html [:body
                 [:ul
                  (for [k (seq (wb/keys-in bucket))]
-                   (let [v (get-url k)]
+                   (let [v (escape-html (get-url k))]
                      [:li [:a {:href v} v]]))]])})
 
 (defroutes app
