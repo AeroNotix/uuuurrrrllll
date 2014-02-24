@@ -17,30 +17,55 @@
                  (char c))))
 
 (defn gen-short-url [n]
-  (clojure.string/join
-   (take n (repeatedly #(rand-nth char-seq)))))
+  (->> #(rand-nth char-seq)
+       repeatedly
+       (take n)
+       clojure.string/join))
 
-(defn add-url! [url]
+(defn add-entry! [body]
   (let [short-url (gen-short-url 10)]
-    (kv/store bucket short-url url)
+    (kv/store bucket short-url body
+              :content-type "application/json"
+              :indexes {:all #{"all"}})
     short-url))
 
-(defn get-url [short]
-  (if-let [value (-> (kv/fetch-one bucket short)
-                     :result
-                     :value)]
-    (String. value)
-    nil))
+(defn read-entry [entry]
+  (-> entry
+      :result
+      :value))
+
+(defn get-entry [short]
+  (read-entry (kv/fetch-one bucket short)))
+
+(defn merge-urls [grouped-urls]
+  (for [[k v] grouped-urls]
+    [k (map :url v)]))
+
+(defn get-all-entries []
+  (let [keys (wb/keys-in bucket)]
+    (->> "all"
+         (kv/index-query bucket :all)
+         (pmap get-entry)
+         (group-by :channel)
+         (merge-urls))))
 
 (defn handle-post [request]
-  (if-let [url (get-in request [:body "url"])]
-    {:status 201 :body {:short (add-url! url)}}
-    {:status 400}))
+  (let [body    (:body request)
+        url     (body "url")
+        channel (body "channel")
+        nick    (body "nick")
+        body    {:url     url
+                 :channel channel
+                 :nick    nick}]
+    (if (every? (complement nil?) [url channel nick])
+      {:status 201 :body {:short (add-entry! body)}}
+      {:status 400})))
 
 (defn handle-get [request]
   (if-let [url (-> request
                    (get-in [:params :url])
-                   (get-url))]
+                   (get-entry)
+                   :url)]
     {:status 301 :headers {"location" url}}
     {:status 404}))
 
@@ -48,9 +73,11 @@
   {:status 200
    :body (html [:body
                 [:ul
-                 (for [k (seq (wb/keys-in bucket))]
-                   (let [v (escape-html (get-url k))]
-                     [:li [:a {:href v} v]]))]])})
+                 (for [[channel urls] (get-all-entries)]
+                   [:li channel
+                    [:ul (for [url urls]
+                           (let [v (escape-html url)]
+                             [:li [:a {:href v} v]]))]])]])})
 
 (defroutes app
   (POST "/" request
