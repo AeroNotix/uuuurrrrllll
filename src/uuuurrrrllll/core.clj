@@ -3,11 +3,14 @@
             [clojurewerkz.welle.core :as wc]
             [clojurewerkz.welle.kv :as kv]
             [compojure.core :refer [defroutes routes GET POST]]
+            [hiccup.util :refer [escape-html]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body
-                                          wrap-json-response]]
-            [hiccup.util :refer [escape-html]])
-  (:use [hiccup.core]))
+                                          wrap-json-response]])
+  (:use [clojurewerkz.cassaforte.client :as client]
+        [clojurewerkz.cassaforte.cql]
+        [clojurewerkz.cassaforte.query]
+        [hiccup.core]))
 
 
 (def bucket "links")
@@ -46,9 +49,12 @@
   (let [keys (wb/keys-in bucket)]
     (->> "all"
          (kv/index-query bucket :all)
-         (pmap get-entry)
-         (group-by :channel)
-         (merge-urls))))
+         (pmap get-entry))))
+
+(defn coalesce-entries []
+  (->> (get-all-entries)
+       (group-by :channel)
+       (merge-urls)))
 
 (defn handle-post [request]
   (wc/connect!)
@@ -77,7 +83,7 @@
   {:status 200
    :body (html [:body
                 [:ul
-                 (for [[channel urls] (get-all-entries)]
+                 (for [[channel urls] (coalesce-entries)]
                    [:li channel
                     [:ul (for [url urls]
                            (let [v (escape-html url)]
