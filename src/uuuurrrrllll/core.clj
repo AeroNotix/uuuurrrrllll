@@ -46,10 +46,9 @@
 
 (defn get-all-entries []
   (wc/connect!)
-  (let [keys (wb/keys-in bucket)]
-    (->> "all"
-         (kv/index-query bucket :all)
-         (pmap get-entry))))
+  (->> "all"
+       (kv/index-query bucket :all)
+       (pmap get-entry)))
 
 (defn coalesce-entries []
   (->> (get-all-entries)
