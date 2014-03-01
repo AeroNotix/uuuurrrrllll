@@ -6,67 +6,28 @@
             [hiccup.util :refer [escape-html]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body
-                                          wrap-json-response]])
-  (:use [clojurewerkz.cassaforte.client :as client]
-        [clojurewerkz.cassaforte.cql]
-        [clojurewerkz.cassaforte.query]
-        [hiccup.core]))
+                                          wrap-json-response]]
+            [ring.middleware.stacktrace :refer [wrap-stacktrace]]
+            [uuuurrrrllll.riak :refer [coalesce-entries
+                                       get-entry
+                                       add-entry!]])
+  (:use [hiccup.core]))
 
-
-(def bucket "links")
-
-(def char-seq (doall
-               (for [c (range 65 91)]
-                 (char c))))
-
-(defn gen-short-url [n]
-  (->> #(rand-nth char-seq)
-       repeatedly
-       (take n)
-       clojure.string/join))
-
-(defn add-entry! [body]
-  (let [short-url (gen-short-url 10)]
-    (kv/store bucket short-url body
-              :content-type "application/json"
-              :indexes {:all #{"all"}})
-    short-url))
-
-(defn read-entry [entry]
-  (-> entry
-      :result
-      :value))
-
-(defn get-entry [short]
-  (read-entry (kv/fetch-one bucket short)))
-
-(defn merge-urls [grouped-urls]
-  (for [[k v] grouped-urls]
-    [k (map :url v)]))
-
-(defn get-all-entries []
-  (wc/connect!)
-  (->> "all"
-       (kv/index-query bucket :all)
-       (pmap get-entry)))
-
-(defn coalesce-entries []
-  (->> (get-all-entries)
-       (group-by :channel)
-       (merge-urls)))
 
 (defn handle-post [request]
   (wc/connect!)
-  (let [body    (:body request)
-        url     (body "url")
-        channel (body "channel")
-        nick    (body "nick")
-        body    {:url     url
-                 :channel channel
-                 :nick    nick}]
-    (if (every? (complement nil?) [url channel nick])
-      {:status 201 :body {:short (add-entry! body)}}
-      {:status 400})))
+  (if (map? (:body request))
+    (let [body    (:body request)
+          url     (body "url")
+          channel (body "channel")
+          nick    (body "nick")
+          body    {:url     url
+                   :channel channel
+                   :nick    nick}]
+      (if (every? (complement nil?) [url channel nick])
+        {:status 201 :body {:short (add-entry! body)}}
+        {:status 400}))
+    {:status 400}))
 
 (defn handle-get [request]
   (wc/connect!)
@@ -99,10 +60,9 @@
 (def wrapp
   (-> app
       wrap-json-body
-      wrap-json-response))
+      wrap-json-response
+      wrap-stacktrace))
 
 (defn -main [& args]
   (wc/connect!)
-  (if-not (contains? (wb/list) bucket)
-    (wb/create bucket))
   (jetty/run-jetty wrapp {:port 8080}))
