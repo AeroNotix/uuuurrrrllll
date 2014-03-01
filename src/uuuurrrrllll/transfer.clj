@@ -11,4 +11,11 @@
 (def table "message")
 
 (defn transfer []
-  (insert-batch table (get-all-entries)))
+  (spit "f" "[")
+  (doall (for [entry (get-all-entries)]
+           (do (spit "f" entry :append true)
+               (spit "f" "," :append true))))
+  (spit "f" "]" :append true))
+
+(defn transfer-from-file []
+  (insert-batch table (read-string (slurp "f"))))
