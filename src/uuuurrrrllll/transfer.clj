@@ -2,6 +2,7 @@
   (:require [clojurewerkz.welle.buckets :as wb]
             [clojurewerkz.welle.core :as wc]
             [clojurewerkz.welle.kv :as kv]
+            [uuuurrrrllll.util :refer [gen-short-url]]
             [uuuurrrrllll.riak :refer [get-all-entries]])
   (:use [clojurewerkz.cassaforte.client :as client]
         [clojurewerkz.cassaforte.cql]
@@ -11,7 +12,8 @@
 (def table "message")
 
 (defn transfer-in-memory []
-  (insert-batch table (get-all-entries)))
+  (pmap #(insert table %)
+        (map #(assoc % :short_url (gen-short-url 5)) (get-all-entries))))
 
 (defn transfer []
   (spit "f" "[")
