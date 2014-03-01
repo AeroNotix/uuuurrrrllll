@@ -15,7 +15,6 @@
 
 
 (defn handle-post [request]
-  (wc/connect!)
   (if (map? (:body request))
     (let [body    (:body request)
           url     (body "url")
@@ -30,7 +29,6 @@
     {:status 400}))
 
 (defn handle-get [request]
-  (wc/connect!)
   (if-let [url (-> request
                    (get-in [:params :url])
                    (get-entry)
