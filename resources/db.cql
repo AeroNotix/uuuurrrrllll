@@ -7,8 +7,9 @@ WITH replication = {
 };
 
 CREATE TABLE uuuurrrrllll.message (
-    channel text,
-    nick    text,
-    url     text,
-    PRIMARY KEY (url)
+    short_url text,
+    channel   text,
+    nick      text,
+    url       text,
+    PRIMARY KEY (url, short_url)
 );

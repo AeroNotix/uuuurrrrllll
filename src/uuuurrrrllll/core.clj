@@ -26,17 +26,18 @@
                    :channel channel
                    :nick    nick}]
       (if (every? (complement nil?) [url channel nick])
-        {:status 201 :body {:short (add-entry! body)}}
+        {:status 201 :body {:short (cass/add-entry! body)}}
         {:status 400}))
     {:status 400}))
 
 (defn handle-get [request]
   (if-let [url (-> request
                    (get-in [:params :url])
-                   (get-entry)
+                   (cass/get-entry)
                    :url)]
     {:status 301 :headers {"location" url}}
-    {:status 404}))
+    ;; returning nil invokes the jetty 404 handler.
+    nil))
 
 (defn list-all [getter]
   (fn [request]
