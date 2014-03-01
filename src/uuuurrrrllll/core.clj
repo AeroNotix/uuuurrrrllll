@@ -1,17 +1,19 @@
 (ns uuuurrrrllll.core
-  (:require [clojurewerkz.welle.buckets :as wb]
-            [clojurewerkz.welle.core :as wc]
-            [clojurewerkz.welle.kv :as kv]
+  (:require [clojurewerkz.welle.core :as wc]
             [compojure.core :refer [defroutes routes GET POST]]
             [hiccup.util :refer [escape-html]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body
                                           wrap-json-response]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
-            [uuuurrrrllll.riak :refer [coalesce-entries
+            [uuuurrrrllll.riak :refer [get-all-entries
                                        get-entry
-                                       add-entry!]])
-  (:use [hiccup.core]))
+                                       add-entry!]]
+            [uuuurrrrllll.cassandra :as cass]
+            [uuuurrrrllll.util :refer [coalesce-entries]])
+  (:use [clojurewerkz.cassaforte.client :as client]
+        [clojurewerkz.cassaforte.cql]
+        [hiccup.core]))
 
 
 (defn handle-post [request]
@@ -36,22 +38,27 @@
     {:status 301 :headers {"location" url}}
     {:status 404}))
 
-(defn list-all [request]
-  (wc/connect!)
-  {:status 200
-   :body (html [:body
-                [:ul
-                 (for [[channel urls] (coalesce-entries)]
-                   [:li channel
-                    [:ul (for [url urls]
-                           (let [v (escape-html url)]
-                             [:li [:a {:href v} v]]))]])]])})
+(defn list-all [getter]
+  (fn [request]
+    {:status 200
+     :body (html [:body
+                  [:ul
+                   (for [[channel urls] (coalesce-entries getter)]
+                     [:li channel
+                      [:ul (for [url urls]
+                             (let [v (escape-html url)]
+                               [:li [:a {:href v} v]]))]])]])}))
+
+(def list-all-riak (list-all get-all-entries))
+(def list-all-cass (list-all cass/get-all-entries))
 
 (defroutes app
   (POST "/" request
         handle-post)
-  (GET "/list/" request
-       list-all)
+  (GET "/list_riak/" request
+       list-all-riak)
+  (GET "/list_cass/" request
+       list-all-cass)
   (GET "/:url/" request
        handle-get))
 
@@ -63,4 +70,6 @@
 
 (defn -main [& args]
   (wc/connect!)
+  (client/connect! ["localhost"])
+  (use-keyspace "uuuurrrrllll")
   (jetty/run-jetty wrapp {:port 8080}))
