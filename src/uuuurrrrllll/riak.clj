@@ -12,23 +12,13 @@
       :result
       :value))
 
-(defn merge-urls [grouped-urls]
-  (for [[k v] grouped-urls]
-    [k (map :url v)]))
-
 (defn get-entry [short]
   (read-entry (kv/fetch-one bucket short)))
 
 (defn get-all-entries []
-  (wc/connect!)
   (->> "all"
        (kv/index-query bucket :all)
        (pmap get-entry)))
-
-(defn coalesce-entries []
-  (->> (get-all-entries)
-       (group-by :channel)
-       (merge-urls)))
 
 (defn add-entry! [body]
   (let [short-url (gen-short-url 5)]
