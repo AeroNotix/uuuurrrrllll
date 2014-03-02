@@ -16,4 +16,4 @@
     short-url))
 
 (defn get-entry [short]
-  (select table (where :short_url short) (allow-filtering true)))
+  (first (select table (where :short_url short) (allow-filtering true))))
