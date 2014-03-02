@@ -34,6 +34,7 @@
   (if-let [url (-> request
                    (get-in [:params :url])
                    (cass/get-entry)
+                   first
                    :url)]
     {:status 301 :headers {"location" url}}
     ;; returning nil invokes the jetty 404 handler.
