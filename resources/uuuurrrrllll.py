@@ -16,17 +16,25 @@ URL_SERVER_EXTERNAL = "http://zerolength.com:8080/%s/"
 def irc_message(s):
     nick, command, channel, message = s.split(' ', 3)
     return {
-        'nick'   : nick.split("!")[0][1:],
+        'nick': nick.split("!")[0][1:],
         'command': command,
         'channel': channel,
         'message': message[1:]
     }
 
+
 def irc_network(s):
     return s.split(',')[0]
 
+
 def extract_urls(s):
-    return re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', s)
+    return re.findall(
+        'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]'
+        '|'
+        '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+        s
+    )
+
 
 def shorten_url(data, signal, signal_data):
     d = irc_message(signal_data)
@@ -36,14 +44,15 @@ def shorten_url(data, signal, signal_data):
     for url in extract_urls(d['message']):
         r = requests.post(
             URL_SERVER,
-            data = json.dumps({
+            data=json.dumps({
                 'url':     url,
                 'nick':    d['nick'],
                 'channel': d['channel']
             }),
-            headers = {'content-type': 'application/json'})
+            headers={'content-type': 'application/json'})
         shortened.append(r.json()['short'])
     if shortened:
         weechat.prnt(channel_ptr,
-                     ' | '.join([URL_SERVER_EXTERNAL % url for url in shortened]))
+                     ' | '.join([URL_SERVER_EXTERNAL
+                                 % url for url in shortened]))
     return weechat.WEECHAT_RC_OK
