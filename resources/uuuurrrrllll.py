@@ -9,7 +9,7 @@ weechat.register("uuuurrrrllll", "Aaron France", "0.0.1", "GPL",
 
 weechat.hook_signal("*,irc_in_privmsg", "shorten_url", "")
 
-URL_SERVER = "http://localhost:8080/"
+URL_SERVER = "http://zerolength.com:8080/"
 URL_SERVER_EXTERNAL = "http://zerolength.com:8080/%s/"
 
 
