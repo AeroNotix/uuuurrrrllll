@@ -42,7 +42,7 @@ def shorten_url(data, signal, signal_data):
     channel_ptr = weechat.buffer_search("irc", "%s.%s" % (n, d['channel']))
     shortened = []
     for url in extract_urls(d['message']):
-        if len(URL_SERVER_EXTERNAL) + 6 < len(url):
+        if len(URL_SERVER_EXTERNAL) + 6 > len(url):
             continue
         r = requests.post(
             URL_SERVER,
