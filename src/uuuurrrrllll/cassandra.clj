@@ -18,7 +18,7 @@
 
 (defn add-text! [text]
   (let [short-code (gen-short-url 7)]
-    (insert pastes {:short_code short-code :message text})
+    (insert pastes {:short_code short-code :message text} (using :ttl 3600))
     short-code))
 
 (defn get-entry [short]
