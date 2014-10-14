@@ -42,6 +42,14 @@
         {:status 201 :body {:short (cass/add-entry! body)}}
         {:status 400}))))
 
+(defn handle-text-get [request]
+  (if-let [message (-> request
+                     (get-in [:params :code])
+                     (cass/get-text-entry)
+                     :message)]
+    (:status 200 :body message)
+    nil))
+
 (defn handle-get [request]
   (if-let [url (-> request
                    (get-in [:params :url])
@@ -74,6 +82,8 @@
        list-all-riak)
   (GET "/list_cass/" request
        list-all-cass)
+  (GET "/t/:code/" request
+       handle-text-get)
   (GET "/:url/" request
        handle-get))
 

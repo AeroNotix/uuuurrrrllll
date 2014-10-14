@@ -24,3 +24,7 @@
 (defn get-entry [short]
   (first
    (select table (where :short_url short) (allow-filtering true))))
+
+(defn get-text-entry [short]
+  (first
+   (select pastes (where :short_code short) (allow-filtering true))))
