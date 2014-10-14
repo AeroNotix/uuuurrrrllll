@@ -47,7 +47,7 @@
                      (get-in [:params :code])
                      (cass/get-text-entry)
                      :message)]
-    (:status 200 :body message)
+    {:status 200 :body message}
     nil))
 
 (defn handle-get [request]
