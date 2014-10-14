@@ -16,8 +16,21 @@
         [hiccup.core]))
 
 
+(defmacro with-map-or-400 [request & body]
+  `(if (map? (:body ~request))
+     ~@body
+    {:status 400}))
+
+(defn handle-text [request]
+  (with-map-or-400 request
+    (let [body (:body request)
+          text (body "text")]
+      (if text
+        {:status 201 :body {:url (cass/add-text! text)}}
+        {:status 400}))))
+
 (defn handle-post [request]
-  (if (map? (:body request))
+  (with-map-or-400 request
     (let [body    (:body request)
           url     (body "url")
           channel (body "channel")
@@ -27,8 +40,7 @@
                    :nick    nick}]
       (if (every? (complement nil?) [url channel nick])
         {:status 201 :body {:short (cass/add-entry! body)}}
-        {:status 400}))
-    {:status 400}))
+        {:status 400}))))
 
 (defn handle-get [request]
   (if-let [url (-> request
@@ -54,6 +66,8 @@
 (def list-all-cass (list-all cass/get-all-entries))
 
 (defroutes app
+  (POST "/t/" request
+    handle-text)
   (POST "/" request
         handle-post)
   (GET "/list_riak/" request

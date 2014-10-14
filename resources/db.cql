@@ -13,3 +13,9 @@ CREATE TABLE IF NOT EXISTS uuuurrrrllll.message (
     url       text,
     PRIMARY KEY (url, short_url)
 );
+
+CREATE TABLE IF NOT EXISTS uuuurrrrllll.pastes (
+    short_code text,
+    message    text,
+    PRIMARY KEY (short_code)
+);

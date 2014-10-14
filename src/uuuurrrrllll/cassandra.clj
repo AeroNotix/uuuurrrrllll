@@ -6,6 +6,7 @@
 
 
 (def table "message")
+(def pastes "pastes")
 
 (defn get-all-entries []
   (select table))
@@ -14,6 +15,11 @@
   (let [short-url (gen-short-url 5)]
     (insert table (assoc body :short_url short-url))
     short-url))
+
+(defn add-text! [text]
+  (let [short-code (gen-short-url 7)]
+    (insert pastes {:short_code short-code :message text})
+    short-code))
 
 (defn get-entry [short]
   (first
