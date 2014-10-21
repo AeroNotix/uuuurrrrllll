@@ -13,7 +13,7 @@
 
 (defn add-entry! [body]
   (let [short-url (gen-short-url 5)]
-    (insert table (assoc body :short_url short-url))
+    (insert table (assoc body :short_url short-url) (using :ttl 600))
     short-url))
 
 (defn add-text! [text]
