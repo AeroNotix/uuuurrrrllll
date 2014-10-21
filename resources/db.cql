@@ -19,3 +19,4 @@ CREATE TABLE IF NOT EXISTS uuuurrrrllll.pastes (
     message    text,
     PRIMARY KEY (short_code)
 );
+
