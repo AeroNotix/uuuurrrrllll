@@ -4,8 +4,7 @@
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
-            [uuuurrrrllll.cassandra :as cass]
-            [uuuurrrrllll.riak :refer [get-entry add-entry!]])
+            [uuuurrrrllll.cassandra :as cass])
   (:use [clojurewerkz.cassaforte.client :as client]
         [clojurewerkz.cassaforte.cql]
         [hiccup.core]))
