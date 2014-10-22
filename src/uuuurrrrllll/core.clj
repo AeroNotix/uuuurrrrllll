@@ -1,16 +1,11 @@
 (ns uuuurrrrllll.core
   (:require [clojurewerkz.welle.core :as wc]
-            [compojure.core :refer [defroutes routes GET POST]]
-            [hiccup.util :refer [escape-html]]
+            [compojure.core :refer [defroutes GET POST]]
             [ring.adapter.jetty :as jetty]
-            [ring.middleware.json :refer [wrap-json-body
-                                          wrap-json-response]]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
-            [uuuurrrrllll.riak :refer [get-all-entries
-                                       get-entry
-                                       add-entry!]]
             [uuuurrrrllll.cassandra :as cass]
-            [uuuurrrrllll.util :refer [coalesce-entries]])
+            [uuuurrrrllll.riak :refer [get-entry add-entry!]])
   (:use [clojurewerkz.cassaforte.client :as client]
         [clojurewerkz.cassaforte.cql]
         [hiccup.core]))
@@ -20,14 +15,6 @@
   `(if (map? (:body ~request))
      ~@body
     {:status 400}))
-
-(defn handle-text [request]
-  (with-map-or-400 request
-    (let [body (:body request)
-          text (body "text")]
-      (if text
-        {:status 201 :body {:url (cass/add-text! text)}}
-        {:status 400}))))
 
 (defn handle-post [request]
   (with-map-or-400 request
@@ -60,12 +47,8 @@
     nil))
 
 (defroutes app
-  (POST "/t/" request
-    handle-text)
   (POST "/" request
         handle-post)
-  (GET "/t/:code/" request
-       handle-text-get)
   (GET "/:url/" request
        handle-get))
 

@@ -1,9 +1,6 @@
 (ns uuuurrrrllll.transfer
-  (:require [clojurewerkz.welle.buckets :as wb]
-            [clojurewerkz.welle.core :as wc]
-            [clojurewerkz.welle.kv :as kv]
-            [uuuurrrrllll.util :refer [gen-short-url]]
-            [uuuurrrrllll.riak :refer [get-all-entries]])
+  (:require [uuuurrrrllll.riak :refer [get-all-entries]]
+            [uuuurrrrllll.util :refer [gen-short-url]])
   (:use [clojurewerkz.cassaforte.client :as client]
         [clojurewerkz.cassaforte.cql]
         [clojurewerkz.cassaforte.query]))

@@ -1,7 +1,5 @@
 (ns uuuurrrrllll.riak
-  (:require [clojurewerkz.welle.buckets :as wb]
-            [clojurewerkz.welle.core :as wc]
-            [clojurewerkz.welle.kv :as kv]
+  (:require [clojurewerkz.welle.kv :as kv]
             [uuuurrrrllll.util :refer [gen-short-url]]))
 
 

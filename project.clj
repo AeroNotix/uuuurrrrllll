@@ -4,9 +4,9 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :main ^:skip-aot uuuurrrrllll.core
-  :dependencies [[compojure "1.1.6"]
-                 [clojurewerkz/cassaforte "1.3.0-beta8"]
+  :dependencies [[clojurewerkz/cassaforte "1.3.0-beta8"]
                  [com.novemberain/welle "2.0.0-beta1"]
+                 [compojure "1.1.6"]
                  [hiccup "1.0.5"]
                  [org.clojure/clojure "1.5.1"]
                  [ring "1.2.1"]
