@@ -1,6 +1,5 @@
 (ns uuuurrrrllll.core
-  (:require [clojurewerkz.welle.core :as wc]
-            [compojure.core :refer [defroutes GET POST]]
+  (:require [compojure.core :refer [defroutes GET POST]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
@@ -58,7 +57,6 @@
     wrap-stacktrace))
 
 (defn -main [& args]
-  (wc/connect!)
   (client/connect! ["localhost"])
   (use-keyspace "uuuurrrrllll")
   (jetty/run-jetty wrapp {:port 8080}))
