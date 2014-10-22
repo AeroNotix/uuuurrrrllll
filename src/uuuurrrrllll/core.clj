@@ -59,29 +59,11 @@
     ;; returning nil invokes the jetty 404 handler.
     nil))
 
-(defn list-all [getter]
-  (fn [request]
-    {:status 200
-     :body (html [:body
-                  [:ul
-                   (for [[channel urls] (coalesce-entries getter)]
-                     [:li channel
-                      [:ul (for [url urls]
-                             (let [v (escape-html url)]
-                               [:li [:a {:href v} v]]))]])]])}))
-
-(def list-all-riak (list-all get-all-entries))
-(def list-all-cass (list-all cass/get-all-entries))
-
 (defroutes app
   (POST "/t/" request
     handle-text)
   (POST "/" request
         handle-post)
-  (GET "/list_riak/" request
-       list-all-riak)
-  (GET "/list_cass/" request
-       list-all-cass)
   (GET "/t/:code/" request
        handle-text-get)
   (GET "/:url/" request
