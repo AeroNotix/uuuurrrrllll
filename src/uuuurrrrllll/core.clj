@@ -13,7 +13,7 @@
      ~@body
      {:status 400}))
 
-(defn handle-post [request]
+(defn insert-message [request]
   (with-map-or-400 request
     (let [body    (:body request)
           url     (body "url")
@@ -26,15 +26,7 @@
         {:status 201 :body {:short (cass/add-entry! body)}}
         {:status 400}))))
 
-(defn handle-text-get [request]
-  (if-let [message (-> request
-                     (get-in [:params :code])
-                     (cass/get-text-entry)
-                     :message)]
-    {:status 200 :body message}
-    nil))
-
-(defn handle-get [request]
+(defn retrieve-message [request]
   (if-let [url (-> request
                  (get-in [:params :url])
                  (cass/get-entry)
@@ -44,9 +36,9 @@
 
 (defroutes app
   (POST "/" request
-    handle-post)
+    insert-message)
   (GET "/:url/" request
-    handle-get))
+    retrieve-message))
 
 (def wrapp
   (-> app
@@ -55,6 +47,6 @@
     wrap-stacktrace))
 
 (defn -main [& args]
-  (client/connect! ["localhost"])
+  (client/connect ["localhost"])
   (use-keyspace "uuuurrrrllll")
   (jetty/run-jetty wrapp {:port 8080}))
