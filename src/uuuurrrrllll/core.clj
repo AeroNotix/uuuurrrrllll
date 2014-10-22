@@ -13,7 +13,7 @@
 (defmacro with-map-or-400 [request & body]
   `(if (map? (:body ~request))
      ~@body
-    {:status 400}))
+     {:status 400}))
 
 (defn handle-post [request]
   (with-map-or-400 request
@@ -38,24 +38,24 @@
 
 (defn handle-get [request]
   (if-let [url (-> request
-                   (get-in [:params :url])
-                   (cass/get-entry)
-                   :url)]
+                 (get-in [:params :url])
+                 (cass/get-entry)
+                 :url)]
     {:status 301 :headers {"location" url}}
     ;; returning nil invokes the jetty 404 handler.
     nil))
 
 (defroutes app
   (POST "/" request
-        handle-post)
+    handle-post)
   (GET "/:url/" request
-       handle-get))
+    handle-get))
 
 (def wrapp
   (-> app
-      wrap-json-body
-      wrap-json-response
-      wrap-stacktrace))
+    wrap-json-body
+    wrap-json-response
+    wrap-stacktrace))
 
 (defn -main [& args]
   (wc/connect!)
