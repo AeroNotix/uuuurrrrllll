@@ -5,8 +5,7 @@
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
             [uuuurrrrllll.cassandra :as cass])
   (:use [clojurewerkz.cassaforte.client :as client]
-        [clojurewerkz.cassaforte.cql]
-        [hiccup.core]))
+        [clojurewerkz.cassaforte.cql]))
 
 
 (defmacro with-map-or-400 [request & body]
@@ -41,7 +40,6 @@
                  (cass/get-entry)
                  :url)]
     {:status 301 :headers {"location" url}}
-    ;; returning nil invokes the jetty 404 handler.
     nil))
 
 (defroutes app
