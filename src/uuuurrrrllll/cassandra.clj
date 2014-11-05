@@ -6,8 +6,10 @@
         [clojurewerkz.cassaforte.query]))
 
 
-(def table "message")
+(def default-hosts ["localhost"])
+(def keyspace "uuuurrrrllll")
 (def pastes "pastes")
+(def table "message")
 
 (defprotocol URLShortener
   (add-entry! [shortener body])
@@ -16,8 +18,8 @@
 (defrecord Cassandra [conn]
   component/Lifecycle
   (start [cass]
-    (let [conn (client/connect ["localhost"])]
-      (use-keyspace conn "uuuurrrrllll")
+    (let [conn (client/connect default-hosts)]
+      (use-keyspace conn keyspace)
       (assoc cass :conn conn)))
   (stop [cass]
     (client/disconnect! conn))
