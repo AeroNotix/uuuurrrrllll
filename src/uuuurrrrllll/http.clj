@@ -51,6 +51,6 @@
                 wrap-json-response
                 wrap-stacktrace)]
       (assoc http-server :server
-             (jetty/run-jetty app{:port 8080 :join? false}))))
+             (jetty/run-jetty app {:port 8080 :join? false}))))
   (stop [http-server]
     (.stop (:server http-server))))
