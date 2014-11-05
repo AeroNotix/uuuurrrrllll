@@ -10,6 +10,7 @@
 (def keyspace "uuuurrrrllll")
 (def pastes "pastes")
 (def table "message")
+(def short-code-length 5)
 
 (defprotocol URLShortener
   (add-entry! [shortener body])
@@ -26,7 +27,7 @@
 
   URLShortener
   (add-entry! [cass body]
-    (let [short-url (gen-short-url 5)]
+    (let [short-url (gen-short-url short-code-length)]
       (insert (:conn cass) table (assoc body :short_url short-url))
       short-url))
   (get-entry [cass short-code]
