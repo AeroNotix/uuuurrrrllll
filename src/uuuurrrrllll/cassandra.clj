@@ -1,5 +1,6 @@
 (ns uuuurrrrllll.cassandra
-  (:require [uuuurrrrllll.util :refer [gen-short-url]])
+  (:require [uuuurrrrllll.util :refer [gen-short-url]]
+            [com.stuartsierra.component :as component])
   (:use [clojurewerkz.cassaforte.client :as client]
         [clojurewerkz.cassaforte.cql]
         [clojurewerkz.cassaforte.query]))
@@ -8,23 +9,27 @@
 (def table "message")
 (def pastes "pastes")
 
-(defn get-all-entries []
-  (select table))
+(defprotocol URLShortener
+  (add-entry! [shortener body])
+  (get-entry  [shortener short-code]))
 
-(defn add-entry! [body]
-  (let [short-url (gen-short-url 5)]
-    (insert table (assoc body :short_url short-url) (using :ttl 600))
-    short-url))
+(defrecord Cassandra [conn]
+  component/Lifecycle
+  (start [cass]
+    (let [conn (client/connect ["localhost"])]
+      (use-keyspace conn "uuuurrrrllll")
+      (assoc cass :conn conn)))
+  (stop [cass]
+    (client/disconnect! conn))
 
-(defn add-text! [text]
-  (let [short-code (gen-short-url 7)]
-    (insert pastes {:short_code short-code :message text} (using :ttl 3600))
-    short-code))
-
-(defn get-entry [short]
-  (first
-   (select table (where :short_url short) (allow-filtering true))))
-
-(defn get-text-entry [short]
-  (first
-   (select pastes (where :short_code short) (allow-filtering true))))
+  URLShortener
+  (add-entry! [cass body]
+    (let [short-url (gen-short-url 5)]
+      (insert (:conn cass) table (assoc body :short_url short-url))
+      short-url))
+  (get-entry [cass short-code]
+    (first
+      (select (:conn cass)
+        table
+        (where [[= :short_url short-code]])
+        (allow-filtering true)))))
