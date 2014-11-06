@@ -11,6 +11,7 @@ weechat.hook_print('', 'irc_privmsg', '', 1, 'shorten_url', '')
 
 URL_SERVER = "http://zerolength.com:8080/"
 URL_SERVER_EXTERNAL = "http://zerolength.com:8080/%s/"
+COLOR = weechat.color("yellow,blue")
 
 
 def extract_urls(msg):
@@ -41,6 +42,6 @@ def shorten_url(data, buf, date, tags, displayed, hilight, prefix, msg):
             headers={'content-type': 'application/json'})
         shortened.append(resp.json()['short'])
     if shortened:
-        weechat.prnt(buf, ' | '.join([URL_SERVER_EXTERNAL
-                                      % url for url in shortened]))
+        weechat.prnt(buf, COLOR + ' | '.join([URL_SERVER_EXTERNAL
+                                              % url for url in shortened]))
     return weechat.WEECHAT_RC_OK
