@@ -42,6 +42,6 @@ def shorten_url(data, buf, date, tags, displayed, hilight, prefix, msg):
             headers={'content-type': 'application/json'})
         shortened.append(resp.json()['short'])
     if shortened:
-        weechat.prnt(buf, COLOR + ' | '.join([URL_SERVER_EXTERNAL
-                                              % url for url in shortened]))
+        weechat.prnt(buf, "Urls: %s" % COLOR + ' | '.join([URL_SERVER_EXTERNAL
+                                                           % url for url in shortened]))
     return weechat.WEECHAT_RC_OK
